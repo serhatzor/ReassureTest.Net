@@ -101,10 +101,22 @@ namespace ReassureTest.AST
 
             foreach (var propertyInfo in o.GetType().GetProperties())
             {
+                object fieldValue = propertyInfo.GetValue(o);
+                Projection theProjection = null;
+                foreach (var projector in configuration.Harvesting.Projectors)
+                {
+                    theProjection = projector(o, fieldValue, propertyInfo);
+                    if (theProjection == Projection.Ignore)
+                        break;
+                    fieldValue = theProjection.Value;
+                }
+                if (theProjection == Projection.Ignore)
+                    continue;
+
                 if (!configuration.Harvesting.FieldValueSelectors.All(x => x(o, propertyInfo)))
                     continue;
 
-                var nested = Visit(propertyInfo.GetValue(o));
+                var nested = Visit(fieldValue);
                 if (nested != null)
                     cResult.Values.Add(propertyInfo.Name, nested);
             }

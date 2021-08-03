@@ -1,8 +1,23 @@
 ﻿using System;
 using System.Collections;
+using System.Reflection;
 
 namespace ReassureTest
 {
+    public static class ReusableProjectors
+    {
+        public static Projection SkipUnharvestableTypes(object parent, object fieldValue, PropertyInfo info)
+        {
+            var typename = fieldValue.GetType().ToString();
+            if (typename.StartsWith("System.Reflection", StringComparison.Ordinal)
+                || typename.StartsWith("System.Runtime", StringComparison.Ordinal)
+                || typename.StartsWith("System.SignatureStruct", StringComparison.Ordinal)
+                || typename.StartsWith("System.Func", StringComparison.Ordinal))
+                return Projection.Ignore;
+            return Projection.Use(fieldValue);
+        }
+    }
+
     /// <summary>
     /// Reusable implementations for field value translation
     /// </summary>
@@ -15,16 +30,16 @@ namespace ReassureTest
             return o;
         }
 
-        public static object IgnoreUnharvestableTypes(object o)
-        {
-            var typename = o.GetType().ToString();
-            if (typename.StartsWith("System.Reflection", StringComparison.Ordinal)
-                || typename.StartsWith("System.Runtime", StringComparison.Ordinal)
-                || typename.StartsWith("System.SignatureStruct", StringComparison.Ordinal)
-                || typename.StartsWith("System.Func", StringComparison.Ordinal))
-                return null;
-            return o;
-        }
+        //public static object IgnoreUnharvestableTypes(object o)
+        //{
+        //    var typename = o.GetType().ToString();
+        //    if (typename.StartsWith("System.Reflection", StringComparison.Ordinal)
+        //        || typename.StartsWith("System.Runtime", StringComparison.Ordinal)
+        //        || typename.StartsWith("System.SignatureStruct", StringComparison.Ordinal)
+        //        || typename.StartsWith("System.Func", StringComparison.Ordinal))
+        //        return null;
+        //    return o;
+        //}
 
         public static object FixDefaultImmutableArrayCanNotBeTraversed(object o)
         {
