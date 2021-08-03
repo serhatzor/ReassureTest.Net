@@ -6,6 +6,17 @@ namespace ReassureTest.Tests
     public class FieldTranslatorTests
     {
         [Test]
+        public void When_comparing_agains_untraversable_types_Then_just_ignore_thos_types()
+        {
+            new Unharvesable() { F = () => "xxx" }.Is("");
+        }
+
+        class Unharvesable
+        {
+            public Func<string> F { get; set; }
+        }
+
+        [Test]
         public void Domain_types_can_be_simplified_unmodified()
         {
             CreateOrder().Is(@"{
@@ -42,8 +53,12 @@ namespace ReassureTest.Tests
         public void Domain_types_can_be_simplified_config_2()
         {
             var cfg = Reassure.DefaultConfiguration.DeepClone();
-            cfg.Harvesting.FieldValueTranslators.Add(o => o is OrderDate d ? d.Value : o);
-            cfg.Harvesting.FieldValueTranslators.Add(o => o is LatestDeliveryDate d ? d.Value : o);
+            //cfg.Harvesting.FieldValueTranslators.Add(o => o is OrderDate d ? d.Value : o);
+            //cfg.Harvesting.FieldValueTranslators.Add(o => o is LatestDeliveryDate d ? d.Value : o);
+
+            cfg.Harvesting
+                .Add((parent, value, info) => Projection.Use(value is OrderDate d ? d?.Value : value))
+                .Add((parent, value, info) => Projection.Use(value is LatestDeliveryDate d ? d?.Value : value));
 
             CreateOrder().With(cfg).Is(@"{
                 OrderDate = now

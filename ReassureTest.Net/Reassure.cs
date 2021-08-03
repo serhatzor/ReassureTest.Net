@@ -64,11 +64,14 @@ namespace ReassureTest
             new Configuration.HarvestingCfg(
                 fieldValueTranslators: new List<Func<object, object>>()
                 {
-                    FieldValueTranslatorImplementations.IgnoreUnharvestableTypes,
                     FieldValueTranslatorImplementations.SimplifyExceptions,
                     FieldValueTranslatorImplementations.FixDefaultImmutableArrayCanNotBeTraversed,
                     }, 
-                fieldValueSelectors: new List<Func<object, PropertyInfo, bool>>() { (o, pi) => true }
+                fieldValueSelectors: new List<Func<object, PropertyInfo, bool>>() { (o, pi) => true },
+                new List<Configuration.HarvestingCfg.Projector>()
+                {
+                    ReusableProjectors.SkipUnharvestableTypes,
+                }
             ),
             new Configuration.TestFrameworkIntegratonCfg(
                 remapException: ex => ex,

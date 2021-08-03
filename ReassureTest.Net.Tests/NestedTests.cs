@@ -58,7 +58,8 @@ namespace ReassureTest.Tests
         public void When_filtering_only_complex_types_Then_only_get_s2()
         {
             var cfg = Reassure.DefaultConfiguration.DeepClone();
-            cfg.Harvesting.FieldValueSelectors.Add((o, pi) => !pi.PropertyType.IsPrimitive);
+            // cfg.Harvesting.FieldValueSelectors.Add((o, pi) => !pi.PropertyType.IsPrimitive);
+            cfg.Harvesting.Add((parent, value, info) => info.PropertyType.IsPrimitive ? Projection.Ignore : Projection.Use(value));
 
             CreateNestedTop().With(cfg).Is(@"{
                 C = {
@@ -72,7 +73,8 @@ namespace ReassureTest.Tests
         public void When_filtering_all_types_Then_get_empty()
         {
             var cfg = Reassure.DefaultConfiguration.DeepClone();
-            cfg.Harvesting.FieldValueSelectors.Add((o, pi) => false);
+            // cfg.Harvesting.FieldValueSelectors.Add((o, pi) => false);
+            cfg.Harvesting.Add((parent, value, info) => Projection.Ignore);
 
             CreateNestedTop().With(cfg).Is(@"");
         }
